@@ -29,8 +29,8 @@ main()
         int scan=0, nPres=0, nMed=1, nPat=1, i, numero;
         char inami[15], numRegNat;
         FILE *patdat, *meddat, *stdat, *ophdat, *orldat;
-        Medecin *medcourant, *medintervale, *medfisrt, *medsuivant;
-        Patient *patcourant, *patintervale, *patcourant, *patsuivant;
+        Medecin *medcourant, *medintervale, *medfirst, *medsuivant;
+        Patient *patcourant, *patintervale, *patsuivant;
         Prestation *prescourant, *presfirst, *pressuivant;
 
         patdat=fopen("patient.dat","r");
@@ -39,7 +39,7 @@ main()
         ophdat=fopen("ophtalmo.dat","r");
         orldat=fopen("orl.dat","r");
 
-        while(scan<1|| scan >3{
+        while(scan<1|| scan >3){
             printf("Bienvenue dans votre programme de gestion.\n1. Encoder prestation\n2. Rechercher patient\n3. Prise de rendez-vous\n");
             scanf("%1d", scan);
             if(scan<1|| scan >3) {
@@ -64,7 +64,7 @@ main()
 
         //Partie 1 : Trouver le médecin
         printf("Numéro inami : ");
-        gets(inami, 14);
+        //gets(inami, 14);
         medcourant = medfirst;
         for(i=0;i<nMed;i++){
             if(strcmp(inami, medcourant->inami)==0){
@@ -116,6 +116,7 @@ main()
                 prescourant->suivant=pressuivant;
                 prescourant=pressuivant;
                 prescourant=fscanf(ophdat,"%6d", &prescourant->num);
+            }
         }
         else{
             prescourant=fscanf(orldat,"%6d", &prescourant->num);
@@ -127,6 +128,7 @@ main()
                 prescourant->suivant=pressuivant;
                 prescourant=pressuivant;
                 prescourant=fscanf(orldat,"%6d", &prescourant->num);
+            }
         }
         prescourant->suivant=null;
 
