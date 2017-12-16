@@ -16,46 +16,12 @@ main.c:58:13: warning: implicit declaration of function ‘rechercherPatient’;
 main.c:62:13: warning: implicit declaration of function ‘PrendreRendezVous’ [-Wimplicit-function-declaration]
              PrendreRendezVous();
              ^~~~~~~~~~~~~~~~~
-main.c:83:19: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
-         scanf("%13s", numRegNat);
-                ~~~^
-main.c:87:9: error: ‘patfirst’ undeclared (first use in this function); did you mean ‘presfirst’?
-         patfirst=patcourant;
-         ^~~~~~~~
-         presfirst
-main.c:87:9: note: each undeclared identifier is reported only once for each function it appears in
-main.c:94:23: error: ‘nPrest’ undeclared (first use in this function); did you mean ‘nPres’?
-             for(i=0;i<nPrest;i++){
-                       ^~~~~~
-                       nPres
-main.c:110:40: warning: passing argument 2 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
-             if(strcmp(patcourant->niss,numRegNat)==0)
-                                        ^~~~~~~~~
-In file included from main.c:3:0:
-/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
- extern int strcmp (const char *__s1, const char *__s2)
-            ^~~~~~
-main.c:124:28: warning: passing argument 1 of ‘ajouterPatient’ makes pointer from integer without a cast [-Wint-conversion]
-             ajouterPatient(numRegNat, patcourant);
-                            ^~~~~~~~~
-main.c:36:14: note: expected ‘char *’ but argument is of type ‘char’
-         void ajouterPatient(char[], Patient *), ajouterPrestation(Patient *, int, char[]);
-              ^~~~~~~~~~~~~~
-main.c:131:9: error: expected ‘;’ before ‘prescourant’
-         prescourant=malloc(sizeof(Prestation));
-         ^~~~~~~~~~~
-main.c:132:29: error: ‘Medecin {aka struct Medecin}’ has no member named ‘specialite’
-         if(strcmp(medcourant->specialite,"stomatologue")==0){
-                             ^~
 main.c:133:24: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
              prescourant=fscanf(stdat,"%6d", &prescourant->num);
                         ^
 main.c:141:28: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
                  prescourant=fscanf(stdat,"%6d", &prescourant->num);
                             ^
-main.c:144:34: error: ‘Medecin {aka struct Medecin}’ has no member named ‘specialite’
-         else if(strcmp(medcourant->specialite,"ophtalmologue")==0){
-                                  ^~
 main.c:145:24: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
              prescourant=fscanf(ophdat,"%6d", &prescourant->num);
                         ^
@@ -68,11 +34,20 @@ main.c:157:24: warning: assignment makes pointer from integer without a cast [-W
 main.c:165:28: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
                  prescourant=fscanf(orldat,"%6d", &prescourant->num);
                             ^
+main.c:178:27: warning: passing argument 1 of ‘ajouterPrestation’ from incompatible pointer type [-Wincompatible-pointer-types]
+         ajouterPrestation(&patcourant, numero, prescourant->libelle);
+                           ^
+main.c:36:49: note: expected ‘Patient * {aka struct Patient *}’ but argument is of type ‘Patient ** {aka struct Patient **}’
+         void ajouterPatient(char[], Patient *), ajouterPrestation(Patient *, int, char[]);
+                                                 ^~~~~~~~~~~~~~~~~
 main.c: In function ‘ajouterPatient’:
-main.c:188:21: error: assignment to expression with array type
-     patcourant->niss=numRegNat;
-                     ^
+main.c:188:22: warning: assignment makes integer from pointer without a cast [-Wint-conversion]
+     *patcourant->niss=numRegNat;
+                      ^
 main.c: In function ‘ajouterPrestation’:
-main.c:201:37: error: assignment to expression with array type
-     patcourant->presnouveau->libelle=nomPres;
-                                     ^
+main.c:200:5: error: invalid type argument of unary ‘*’ (have ‘int’)
+     *patcourant->presnouveau->num=numero;
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+main.c:201:38: warning: assignment makes integer from pointer without a cast [-Wint-conversion]
+     *patcourant->presnouveau->libelle=nomPres;
+                                      ^
