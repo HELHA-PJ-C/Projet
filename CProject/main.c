@@ -51,15 +51,15 @@ main()
 
         if(scan==1){
 
-            encoderPrestation();
+            //encoderPrestation();
         }
 
         else if(scan==2){
-            rechercherPatient();
+            //rechercherPatient();
         }
 
         else{
-            PrendreRendezVous();
+            //PrendreRendezVous();
         }
 
         //Encoder prestation
@@ -138,7 +138,7 @@ main()
                 pressuivant=malloc(sizeof(Prestation));
                 prescourant->suivant=pressuivant;
                 prescourant=pressuivant;
-                prescourant=fscanf(stdat,"%6d", &prescourant->num);
+                prescourant=fscanf(stdat,"%6d", &3prescourant->num);
             }
         }
         else if(strcmp(medcourant->specialite,"ophtalmologue")==0){
@@ -197,6 +197,6 @@ void ajouterPrestation(Patient *patcourant, int numero, char nomPres[100])
     patcourant->presnouveau=malloc(sizeof(Prestation));
     patcourant->presfinal->suivant=patcourant->presnouveau;
     patcourant->presnouveau->suivant=NULL;
-    *patcourant->presnouveau->num=numero;
+    patcourant->presnouveau->num=numero;
     *patcourant->presnouveau->libelle=nomPres;
 }
