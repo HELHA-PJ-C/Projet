@@ -10,7 +10,7 @@ struct meds
 	char inami[15],spec[21],prenom[31],nom[31],start[9],end[9];
 };
 
-typedef strict pats patds;
+typedef strict pats pats;
 struct pats
 {
 	struct pats *suivant;
