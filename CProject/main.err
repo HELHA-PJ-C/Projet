@@ -1,0 +1,78 @@
+main.c:28:1: warning: return type defaults to ‘int’ [-Wimplicit-int]
+ main()
+ ^~~~
+main.c: In function ‘main’:
+main.c:46:22: warning: format ‘%d’ expects argument of type ‘int *’, but argument 2 has type ‘int’ [-Wformat=]
+             scanf("%1d", scan);
+                    ~~^
+main.c:54:13: warning: implicit declaration of function ‘encoderPrestation’; did you mean ‘ajouterPrestation’? [-Wimplicit-function-declaration]
+             encoderPrestation();
+             ^~~~~~~~~~~~~~~~~
+             ajouterPrestation
+main.c:58:13: warning: implicit declaration of function ‘rechercherPatient’; did you mean ‘ajouterPatient’? [-Wimplicit-function-declaration]
+             rechercherPatient();
+             ^~~~~~~~~~~~~~~~~
+             ajouterPatient
+main.c:62:13: warning: implicit declaration of function ‘PrendreRendezVous’ [-Wimplicit-function-declaration]
+             PrendreRendezVous();
+             ^~~~~~~~~~~~~~~~~
+main.c:83:19: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+         scanf("%13s", numRegNat);
+                ~~~^
+main.c:87:9: error: ‘patfirst’ undeclared (first use in this function); did you mean ‘presfirst’?
+         patfirst=patcourant;
+         ^~~~~~~~
+         presfirst
+main.c:87:9: note: each undeclared identifier is reported only once for each function it appears in
+main.c:94:23: error: ‘nPrest’ undeclared (first use in this function); did you mean ‘nPres’?
+             for(i=0;i<nPrest;i++){
+                       ^~~~~~
+                       nPres
+main.c:110:40: warning: passing argument 2 of ‘strcmp’ makes pointer from integer without a cast [-Wint-conversion]
+             if(strcmp(patcourant->niss,numRegNat)==0)
+                                        ^~~~~~~~~
+In file included from main.c:3:0:
+/usr/include/string.h:136:12: note: expected ‘const char *’ but argument is of type ‘char’
+ extern int strcmp (const char *__s1, const char *__s2)
+            ^~~~~~
+main.c:124:28: warning: passing argument 1 of ‘ajouterPatient’ makes pointer from integer without a cast [-Wint-conversion]
+             ajouterPatient(numRegNat, patcourant);
+                            ^~~~~~~~~
+main.c:36:14: note: expected ‘char *’ but argument is of type ‘char’
+         void ajouterPatient(char[], Patient *), ajouterPrestation(Patient *, int, char[]);
+              ^~~~~~~~~~~~~~
+main.c:131:9: error: expected ‘;’ before ‘prescourant’
+         prescourant=malloc(sizeof(Prestation));
+         ^~~~~~~~~~~
+main.c:132:29: error: ‘Medecin {aka struct Medecin}’ has no member named ‘specialite’
+         if(strcmp(medcourant->specialite,"stomatologue")==0){
+                             ^~
+main.c:133:24: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+             prescourant=fscanf(stdat,"%6d", &prescourant->num);
+                        ^
+main.c:141:28: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+                 prescourant=fscanf(stdat,"%6d", &prescourant->num);
+                            ^
+main.c:144:34: error: ‘Medecin {aka struct Medecin}’ has no member named ‘specialite’
+         else if(strcmp(medcourant->specialite,"ophtalmologue")==0){
+                                  ^~
+main.c:145:24: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+             prescourant=fscanf(ophdat,"%6d", &prescourant->num);
+                        ^
+main.c:153:28: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+                 prescourant=fscanf(ophdat,"%6d", &prescourant->num);
+                            ^
+main.c:157:24: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+             prescourant=fscanf(orldat,"%6d", &prescourant->num);
+                        ^
+main.c:165:28: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+                 prescourant=fscanf(orldat,"%6d", &prescourant->num);
+                            ^
+main.c: In function ‘ajouterPatient’:
+main.c:188:21: error: assignment to expression with array type
+     patcourant->niss=numRegNat;
+                     ^
+main.c: In function ‘ajouterPrestation’:
+main.c:201:37: error: assignment to expression with array type
+     patcourant->presnouveau->libelle=nomPres;
+                                     ^
