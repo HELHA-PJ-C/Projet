@@ -4,8 +4,7 @@
 
 typedef struct Medecin Medecin;
 struct Medecin{
-    char nom[31], prenom[31], inami[15], specialite[21];
-    int heureDeb, heureFin;
+    char nom[31], prenom[31], inami[15], specialite[21], heureDeb[9], heureFin[9];
     struct Medecin *suivant;
 } ;
 
@@ -33,7 +32,9 @@ main()
         Medecin *medcourant, *medintervale, *medfirst, *medsuivant;
         Patient *patfirst, *patcourant, *patintervale, *patsuivant;
         Prestation *prescourant, *presfirst, *pressuivant;
-        void ajouterPatient(char[], Patient *), ajouterPrestation(Patient *, int, char[]), rechercherPatient(Patient *, Patient *, int);
+        void ajouterPatient(char[], Patient *, FILE *), ajouterPrestation(Patient *, int, char[]);
+        struct Patient rechercherPatient(Patient *, int, int*);
+        struct Medecin rechercherMedecin(Medecin *, int, int*);
 
         patdat=fopen("patient.dat","r");
         meddat=fopen("medecin.dat","r");
@@ -49,10 +50,28 @@ main()
             }
         }
 
+        //Lecture de medecin.dat
 
-        //Partie 2 : trouver le patient.
-        //Lecture du fichier
+        medcourant=malloc(sizeof(Medecin));
+        fscanf(meddat,"%14s", medcourant->inami);
+        medfirst=medcourant;
 
+        while(!feof(meddat))
+        {
+            nMed++;
+            fscanf(meddat,"%20s",medcourant->specialite);
+            fgets(medcourant->prenom, 30, meddat);
+            fgets(medcourant->nom, 30, meddat);
+            fscanf(meddat,"%8s %8s", medcourant->heureDeb, medcourant->heureFin);
+            medsuivant=malloc(sizeof(Medecin));
+            medcourant->suivant=medsuivant;
+            medcourant=medsuivant;
+            fscanf(meddat,"%14s", medcourant->inami);
+        }
+        medcourant->suivant=NULL;
+
+
+        //Lecture de patient.dat
 
         patcourant=malloc(sizeof(Patient));
         fscanf(patdat,"%13s", patcourant->niss);
@@ -65,7 +84,7 @@ main()
             fgets(patcourant->nom, 30, patdat);
             fgets(patcourant->prenom, 30, patdat);
             fscanf(patdat,"%10s %d", patcourant->dateNaissance, &nPrest);
-            printf("%d", nPrest);
+
 
             for(i=0;i<nPrest;i++){
                 prescourant=malloc(sizeof(Prestation));
@@ -81,62 +100,64 @@ main()
 
         }
         patcourant->suivant=NULL;
+        fclose(patdat);
+
+
+        //Partie 1 : Encoder une prestation
 
         if(scan==1){
 
             //encoderPrestation();
         }
 
+        //Partie 2 : rechercher un patient
+
         else if(scan==2){
-            rechercherPatient(patcourant, patfirst, nPat);
-            printf(patcourant->niss);
+            *patcourant=rechercherPatient(patfirst, nPat, &present);
+            if(present==1)
+            {
+                printf("%13s %-30s %-30s\n", patcourant->niss, patcourant->nom, patcourant->prenom);
+            }
+            else
+            {
+                printf("Patient non présent dans les données\n");
+            }
+
         }
+
+        //partie 3 : prendre rendez-vous
 
         else{
             //PrendreRendezVous();
         }
-/*
+
         //Encoder prestation
 
-        //Partie 1 : Trouver le médecin
-        printf("Numéro inami : ");
-        //gets(inami, 14);
-        medcourant = medfirst;
-        for(i=0;i<nMed;i++){
-            if(strcmp(inami, medcourant->inami)==0){
-                i=nMed;
-            }
-            else{
-                medcourant = medcourant->suivant;
-            }
-        }
-
-
-
-        //trouver patient
-        patcourant=patfirst;
+        //Recherche du médecin
         present=0;
-        for(i=0;i<nPat;i++)
+        while(present==0)
         {
-            //On vérifie que le patient est dans la liste
-            if(strcmp(patcourant->niss,numRegNat)==0)
+            *medcourant=rechercherMedecin(medfirst, nMed, &present);
+            if(present==0)
             {
-                i=nPat;
-                present=1;
-            }
-            else
-            {
-                patcourant=patcourant->suivant;
+                printf("Erreur : médecin inexistant");
             }
         }
+
+
+        //recherche du patient
+        *patcourant=rechercherPatient(patfirst, nPat, &present);
+
+
+
 
         //Si le patient n'est pas dans le fichier, on l'ajoute
         if(present==0)
         {
-            ajouterPatient(numRegNat, patcourant);
+            ajouterPatient(numRegNat, patcourant, &patdat);
             nPat++;
         }
-
+/*
         //Partie 3 : trouver la prestation
         printf("Encoder numéro de prestation");
         scanf("%6d",&numero);
@@ -190,20 +211,24 @@ main()
         ajouterPrestation(patcourant, numero, prescourant->libelle);
 */
 }
-/*
-void ajouterPatient(char numRegNat[13], Patient *patcourant)
+
+void ajouterPatient(char numRegNat[13], Patient *patcourant, FILE *patdat)
 {
+    *patdat=fopen("patient.dat","a");
     Patient *patsuivant;
     patsuivant=malloc(sizeof(Patient));
     patcourant->suivant=patsuivant;
     patcourant=patsuivant;
-    *patcourant->niss=numRegNat;
+    patcourant->niss=numRegNat;
     printf("Nom du patient : ");
     scanf("%30s", patcourant->nom);
     printf("Prénom du patient : ");
     scanf("%30s", patcourant->prenom);
+    priintf("Date de naissance du patient : ");
+    scanf("%10s", patcourant->dateNaissance);
+    fprintf(*patdat,"\n%13s %-30s %-30s %10s ", patcourant->niss, patcourant->nom, patcourant->prenom, patcourant->dateNaissance);
 }
-
+/*
 void ajouterPrestation(Patient *patcourant, int numero, char nomPres[100])
 {
     patcourant->presnouveau=malloc(sizeof(Prestation));
@@ -213,27 +238,53 @@ void ajouterPrestation(Patient *patcourant, int numero, char nomPres[100])
     *patcourant->presnouveau->libelle=nomPres;
 }*/
 
-void rechercherPatient(Patient *patcourant, Patient *patfirst, int num)
+struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present)
 {
-    int present=0, i;
+    int i;
     char numRegNat[14];
-
-    printf("Encoder numéro du registre national du patient");
+    Patient *patcourant;
+    printf("Encoder numéro du registre national du patient\n");
     scanf("%13s", numRegNat);
 
+    *present=0;
     patcourant=patfirst;
-    for(i=0;i<num;i++)
+    for(i=0;i<nPat;i++)
     {
-        printf("%13s", patcourant->niss);
         //On vérifie que le patient est dans la liste
         if(strcmp(patcourant->niss,numRegNat)==0)
         {
-            i=num;
-            present=1;
+            i=nPat;
+            *present=1;
         }
         else
         {
             patcourant=patcourant->suivant;
         }
     }
+    return *patcourant;
 }
+
+struct Medecin rechercherMedecein(Medecin *medfirst, int nMed, int *present)
+{
+    int i;
+    char inami[15];
+    Medecin *medcourant;
+
+    printf("Numéro inami : ");
+    scanf("%14s", inami);
+
+    medcourant=medfirst;
+    for(i=0;i<nMed;i++)
+    {
+        if(strcmp(medcourant->inami, inami)==0)
+        {
+            i=nMed;
+            *present=1;
+        }
+        else
+        {
+            medcourant=medcourant->suivant;
+        }
+    }
+    return *medcourant;
+};
