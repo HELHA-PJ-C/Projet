@@ -11,9 +11,9 @@ struct Medecin{
 typedef struct Patient Patient;
 struct Patient {
     char nom[31], prenom[31], niss[14], dateNaissance[11];
-    int age;
+    int age, nPres;
     struct Patient *suivant;
-    struct Prestation *presfinal, *presnouveau;
+    struct Prestation *presfirst, *prescourant, *presfinal;
 } ;
 
 typedef struct Prestation Prestation;
@@ -26,15 +26,15 @@ struct Prestation{
 
 main()
 {
-        int scan=0, nPres=0, nMed=0, nPat=0, i, numero, present, nPrest;
-        char inami[15], numRegNat[13];
+        int scan=0, nPres=0, nMed=0, nPat=0, i, numero, present, nPrest, j;
+        char inami[15], numRegNat[14];
         FILE *patdat, *meddat, *stdat, *ophdat, *orldat;
         Medecin *medcourant, *medintervale, *medfirst, *medsuivant;
         Patient *patfirst, *patcourant, *patintervale, *patsuivant;
         Prestation *prescourant, *presfirst, *pressuivant;
-        void ajouterPatient(char[], Patient *, FILE *), ajouterPrestation(Patient *, int, char[]);
-        struct Patient rechercherPatient(Patient *, int, int*);
-        struct Medecin rechercherMedecin(Medecin *, int, int*);
+        struct Prestation ajouterPrestation(Prestation *, int, int *);
+        struct Patient rechercherPatient(Patient *, int, int *, char[]), ajouterPatient(char[]);
+        struct Medecin rechercherMedecin(Medecin *, int, int *);
 
         patdat=fopen("patient.dat","r");
         meddat=fopen("medecin.dat","r");
@@ -84,15 +84,21 @@ main()
             fgets(patcourant->nom, 30, patdat);
             fgets(patcourant->prenom, 30, patdat);
             fscanf(patdat,"%10s %d", patcourant->dateNaissance, &nPrest);
+            patcourant->nPres=nPrest;
+            prescourant=malloc(sizeof(Prestation));
+            patcourant->presfirst=prescourant;
+            fscanf(patdat,"%6d", &prescourant->num);
+            fgets(prescourant->libelle, 100, patdat);
 
-
-            for(i=0;i<nPrest;i++){
-                prescourant=malloc(sizeof(Prestation));
+            for(i=1;i<nPrest;i++){
+                pressuivant=malloc(sizeof(Prestation));
+                prescourant->suivant=pressuivant;
+                prescourant=pressuivant;
                 fscanf(patdat,"%6d", &prescourant->num);
                 fgets(prescourant->libelle, 100, patdat);
-                patcourant->presfinal=prescourant;
-
             }
+            patcourant->presfinal=prescourant;
+
             patsuivant=malloc(sizeof(Patient));
             patcourant->suivant=patsuivant;
             patcourant=patsuivant;
@@ -107,13 +113,125 @@ main()
 
         if(scan==1){
 
-            //encoderPrestation();
+            //Recherche du médecin
+            present=0;
+            while(present==0)
+            {
+                *medcourant=rechercherMedecin(medfirst, nMed, &present);
+                if(present==0)
+                {
+                    printf("Erreur : médecin inexistant");
+                }
+            }
+
+            // Lecture prestation en fonction de la spécialité du médecin
+            prescourant=malloc(sizeof(Prestation));
+            if(strcmp(medcourant->specialite,"STOMATOLOGUE")==0)
+            {
+                prescourant=fscanf(stdat,"%6d", &prescourant->num);
+                presfirst=prescourant;
+                while(!feof(stdat)){
+                    nPres++;
+                    fgets(prescourant->libelle, 100, stdat);
+                    pressuivant=malloc(sizeof(Prestation));
+                    prescourant->suivant=pressuivant;
+                    prescourant=pressuivant;
+                    prescourant=fscanf(stdat,"%6d", &prescourant->num);
+                }
+            }
+            else if(strcmp(medcourant->specialite,"OPHTALMOLOGUE")==0)
+            {
+                prescourant=fscanf(ophdat,"%6d", &nPrest);
+                prescourant->num=nPrest;
+                presfirst=prescourant;
+                while(!feof(ophdat)){
+                    nPres++;
+                    fgets(prescourant->libelle, 100, ophdat);
+                    printf("test");
+                    pressuivant=malloc(sizeof(Prestation));
+                    prescourant->suivant=pressuivant;
+                    prescourant=pressuivant;
+                    prescourant=fscanf(ophdat,"%6d", &prescourant->num);
+                }
+            }
+            else
+            {
+                prescourant=fscanf(orldat,"%6d", &prescourant->num);
+                presfirst=prescourant;
+                while(!feof(orldat)){
+                    nPres++;
+                    fgets(prescourant->libelle, 100, orldat);
+                    pressuivant=malloc(sizeof(Prestation));
+                    prescourant->suivant=pressuivant;
+                    prescourant=pressuivant;
+                    prescourant=fscanf(orldat,"%6d", &prescourant->num);
+                }
+            }
+            prescourant->suivant=NULL;
+
+            //recherche du patient
+            *patcourant=rechercherPatient(patfirst, nPat, &present, numRegNat);
+
+
+
+            //Si le patient n'est pas dans le fichier, on l'ajoute
+
+            if(present==0)
+            {
+                patsuivant=malloc(sizeof(Patient));
+                patcourant->suivant=patsuivant;
+                patcourant=patsuivant;
+                *patcourant=ajouterPatient(numRegNat);
+                while(present==0)
+                {
+                    *prescourant=ajouterPrestation(presfirst, nPres, &present);
+                    if(present==0)
+                    {
+                        printf("Prestation inexistante");
+                    }
+                }
+
+                patcourant->presfirst=prescourant;
+                nPat++;
+            }
+            else
+            {
+                prescourant=patcourant->presfinal;
+                pressuivant=malloc(sizeof(Prestation));
+                prescourant->suivant=pressuivant;
+                prescourant=pressuivant;
+                present=0;
+                while(present==0)
+                {
+                    *prescourant=ajouterPrestation(presfirst, nPres, &present);
+                    if(present==0)
+                    {
+                        printf("Prestation inexistante");
+                    }
+                }
+
+            }
+
+            patdat=fopen("patient.dat","w");
+            patcourant=patfirst;
+            for(i=0;i<nPat;i++)
+            {
+                fprintf(patdat,"%13s %-30s %-30s %10s %d\n", patcourant->niss, patcourant->nom, patcourant->prenom, patcourant->dateNaissance, patcourant->nPres);
+                prescourant=patcourant->presfirst;
+                for(j=0;j<patcourant->nPres;j++)
+                {
+                    printf("%6d %-100s\n", prescourant->num, prescourant->libelle);
+                    prescourant=prescourant->suivant;
+                }
+                patcourant=patcourant->suivant;
+            }
+
         }
 
         //Partie 2 : rechercher un patient
 
         else if(scan==2){
-            *patcourant=rechercherPatient(patfirst, nPat, &present);
+            *patcourant=rechercherPatient(patfirst, nPat, &present, numRegNat);
             if(present==1)
             {
                 printf("%13s %-30s %-30s\n", patcourant->niss, patcourant->nom, patcourant->prenom);
@@ -131,75 +249,6 @@ main()
             //PrendreRendezVous();
         }
 
-        //Encoder prestation
-
-        //Recherche du médecin
-        present=0;
-        while(present==0)
-        {
-            *medcourant=rechercherMedecin(medfirst, nMed, &present);
-            if(present==0)
-            {
-                printf("Erreur : médecin inexistant");
-            }
-        }
-
-
-        //recherche du patient
-        *patcourant=rechercherPatient(patfirst, nPat, &present);
-
-
-
-
-        //Si le patient n'est pas dans le fichier, on l'ajoute
-        if(present==0)
-        {
-            ajouterPatient(numRegNat, patcourant, &patdat);
-            nPat++;
-        }
-/*
-        //Partie 3 : trouver la prestation
-        printf("Encoder numéro de prestation");
-        scanf("%6d",&numero);
-        prescourant=malloc(sizeof(Prestation));
-        if(strcmp(medcourant->specialite,"stomatologue")==0){
-            prescourant=fscanf(stdat,"%6d", &prescourant->num);
-            presfirst=prescourant;
-            while(!feof(stdat)){
-                nPres++;
-                fgets(prescourant->libelle, 100, stdat);
-                pressuivant=malloc(sizeof(Prestation));
-                prescourant->suivant=pressuivant;
-                prescourant=pressuivant;
-                prescourant=fscanf(stdat,"%6d", &prescourant->num);
-            }
-        }
-        else if(strcmp(medcourant->specialite,"ophtalmologue")==0){
-            prescourant=fscanf(ophdat,"%6d", &prescourant->num);
-            presfirst=prescourant;
-            while(!feof(ophdat)){
-                nPres++;
-                fgets(prescourant->libelle, 100, ophdat);
-                pressuivant=malloc(sizeof(Prestation));
-                prescourant->suivant=pressuivant;
-                prescourant=pressuivant;
-                prescourant=fscanf(ophdat,"%6d", &prescourant->num);
-            }
-        }
-        else{
-            prescourant=fscanf(orldat,"%6d", &prescourant->num);
-            presfirst=prescourant;
-            while(!feof(orldat)){
-                nPres++;
-                fgets(prescourant->libelle, 100, orldat);
-                pressuivant=malloc(sizeof(Prestation));
-                prescourant->suivant=pressuivant;
-                prescourant=pressuivant;
-                prescourant=fscanf(orldat,"%6d", &prescourant->num);
-            }
-        }
-        prescourant->suivant=NULL;
-
 
 
         for(i=0;i<nPres;i++){
@@ -207,43 +256,53 @@ main()
                 i=nPres;
             }
         }
-
         ajouterPrestation(patcourant, numero, prescourant->libelle);
-*/
+
 }
 
-void ajouterPatient(char numRegNat[13], Patient *patcourant, FILE *patdat)
+struct Patient ajouterPatient(char numRegNat[13])
 {
-    *patdat=fopen("patient.dat","a");
-    Patient *patsuivant;
-    patsuivant=malloc(sizeof(Patient));
-    patcourant->suivant=patsuivant;
-    patcourant=patsuivant;
-    patcourant->niss=numRegNat;
+    Patient *pat;
+    pat=malloc(sizeof(Patient));
+    strcpy(pat->niss, numRegNat);
     printf("Nom du patient : ");
-    scanf("%30s", patcourant->nom);
+    scanf("%30s", pat->nom);
     printf("Prénom du patient : ");
-    scanf("%30s", patcourant->prenom);
-    priintf("Date de naissance du patient : ");
-    scanf("%10s", patcourant->dateNaissance);
-    fprintf(*patdat,"\n%13s %-30s %-30s %10s ", patcourant->niss, patcourant->nom, patcourant->prenom, patcourant->dateNaissance);
+    scanf("%30s", pat->prenom);
+    printf("Date de naissance : ");
+    scanf("%10s", pat->dateNaissance);
+    pat->nPres=1;
+    return *pat;
 }
-/*
-void ajouterPrestation(Patient *patcourant, int numero, char nomPres[100])
-{
-    patcourant->presnouveau=malloc(sizeof(Prestation));
-    patcourant->presfinal->suivant=patcourant->presnouveau;
-    patcourant->presnouveau->suivant=NULL;
-    patcourant->presnouveau->num=numero;
-    *patcourant->presnouveau->libelle=nomPres;
-}*/
 
-struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present)
+struct Prestation ajouterPrestation(Prestation *presfirst, int nPres, int *present)
+{
+    Prestation *prescourant, *pressuivant;
+    int numero, i;
+    printf("Numéro de prestation : ");
+    scanf("%6d", numero);
+    prescourant=presfirst;
+    *present=0;
+    for(i=0;i<nPres;i++)
+    {
+        if(prescourant->num==numero)
+        {
+            i=nPres;
+            present=1;
+        }
+        else
+        {
+            prescourant=prescourant->suivant;
+        }
+    }
+    return *prescourant;
+}
+
+struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present, char numRegNat[14])
 {
     int i;
-    char numRegNat[14];
     Patient *patcourant;
-    printf("Encoder numéro du registre national du patient\n");
+    printf("Numéro du registre national du patient : ");
     scanf("%13s", numRegNat);
 
     *present=0;
@@ -256,7 +315,7 @@ struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present)
             i=nPat;
             *present=1;
         }
-        else
+        else if(i<(nPat-1))
         {
             patcourant=patcourant->suivant;
         }
@@ -264,7 +323,7 @@ struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present)
     return *patcourant;
 }
 
-struct Medecin rechercherMedecein(Medecin *medfirst, int nMed, int *present)
+struct Medecin rechercherMedecin(Medecin *medfirst, int nMed, int *present)
 {
     int i;
     char inami[15];
@@ -287,4 +346,5 @@ struct Medecin rechercherMedecein(Medecin *medfirst, int nMed, int *present)
         }
     }
     return *medcourant;
-};
+}
+
