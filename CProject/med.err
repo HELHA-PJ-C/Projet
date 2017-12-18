@@ -1,0 +1,11 @@
+med.c: In function ‘main’:
+med.c:83:11: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘char (*)[8]’ [-Wformat=]
+  scanf("%7s",&bjr);
+         ~~^  ~~~~
+med.c:84:2: warning: implicit declaration of function ‘prinf’; did you mean ‘printf’? [-Wimplicit-function-declaration]
+  prinf("%1s",bjr);
+  ^~~~~
+  printf
+/tmp/cch0bkfi.o : Dans la fonction « main » :
+med.c:(.text+0x32c) : référence indéfinie vers « prinf »
+collect2: error: ld returned 1 exit status

@@ -10,22 +10,22 @@ struct meds
 	char inami[15],spec[21],prenom[31],nom[31],start[9],end[9];
 };
 
-typedef strict pats pats;
+typedef struct pats pats;
 struct pats
 {
 	struct pats *suivant;
 	char nom[31], prenom[31], niss[14], dateNaissance[11];
 	int age;
-}
+};
 
 int main()
 {
 	FILE*fdat,*fpat;
 	fpat = fopen("patients.dat","r");
 	fdat = fopen("medecin.dat","r");
-	pats *ptete,*pcourannt,*psuivant,*pfirst;
+	pats *ptete,*pcourant,*psuivant,*pfirst;
 	meds *tete, *courant, *medsuivant,*medfirst;
-	pcourant = malloc(sizeof(pat));
+	pcourant = malloc(sizeof(pats));
 	courant = malloc(sizeof(meds));
 	int i,j;
 	tete = courant;	
@@ -54,17 +54,17 @@ int main()
 	int ret1;
 	int ret2;
 
-	printf("Medecins disponibles maintenant\n");
-	printf("-------------------------------\n\n");
 	
 	time_t rawtime;
 	struct tm *tminfo;
 	time(&rawtime);
 	tminfo = localtime(&rawtime);
 	char timeString[9];
+	printf("Medecins disponibles maintenant à cette heure ci ");
 	strftime(timeString,sizeof(timeString),"%H:%M:%S", tminfo);
-	printf("%s\n",timeString);
+	printf("(%s)\n",timeString);
 	
+	printf("------------------------------------------------------------\n\n");
 	courant = medfirst;
 	for(i = 0; i<=j;i++)
 	{
@@ -75,5 +75,12 @@ int main()
 			printf("%-14s %-20s %-30s %-30s %-8s %-8s\n",courant->inami,courant->spec,courant->prenom,courant->nom,courant->start,courant->end);
 		}
 		courant = courant->suivant;
-	}	
+	}
+
+	printf("\n");
+	char bjr[8];
+
+	scanf("%7s",&bjr);
+	
 }
+
