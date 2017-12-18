@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <ctype.h>
+#include <math.h>
 
 typedef struct Medecin Medecin;
 struct Medecin
 {
-    char nom[31], prenom[31], inami[15], specialite[21], heureDeb[9], heureFin[9], agenda[21];
-
+    char nom[31], prenom[31], inami[15], specialite[21], agenda[21];
+    float heureDeb, heureFin;
     struct Medecin *suivant;
     struct Agenda *agfirst;
 } ;
@@ -33,23 +34,25 @@ struct Prestation
 typedef struct Agenda Agenda;
 struct Agenda
 {
-    char nom[31];
-    int jour, int heure, int mois, int annee, minute;
+    char nom[31], mois[10];
+    int jour, heure, annee, minute;
+    struct Agenda *suivant;
 };
 
 main()
 {
-        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, int nbJours[13], int kint; //i, j, k servent uniquement à incrémenter
-        float k;
-        char numRegNat[14], libelle[101];
-        FILE *patdat, *meddat, *stdat, *ophdat, *orldat;
+        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, nbJours[13], l, jour, annee, nAg=0; //i, j, k servent uniquement à incrémenter
+        float k, tmp, ent;
+        char numRegNat[14], libelle[101], nomMois[13][10], mois[10], nom[31];
+        FILE *patdat, *meddat, *stdat, *ophdat, *orldat, *agdat;
         Medecin *medcourant, *medintervale, *medfirst, *medsuivant;
         Patient *patfirst, *patcourant, *patintervale, *patsuivant;
         Prestation *prescourant, *presfirst, *pressuivant;
-        void convertirLibelle(Prestation *, int);
+        void convertirLibelle(Prestation *, int), convertirNom(char[]), convertirPrenom(char[]);
         struct Prestation ajouterPrestation(Prestation *, int, int *);
         struct Patient rechercherPatient(Patient *, int, int *, char[]), ajouterPatient(char[]);
         struct Medecin rechercherMedecin(Medecin *, int, int *);
+        struct Agenda rechercherAgenda(Agenda *, int, int, int, int*, char[], int);
         struct Agenda *agcourant, *agsuivant;
 
 
@@ -79,7 +82,7 @@ main()
             fscanf(meddat,"%20s",medcourant->specialite);
             fgets(medcourant->prenom, 30, meddat);
             fgets(medcourant->nom, 30, meddat);
-            fscanf(meddat,"%8s %8s", medcourant->heureDeb, medcourant->heureFin);
+            fscanf(meddat,"%2f %2f %20s", &medcourant->heureDeb, &medcourant->heureFin, medcourant->agenda);
             medsuivant=malloc(sizeof(Medecin));
             medcourant->suivant=medsuivant;
             medcourant=medsuivant;
@@ -287,9 +290,20 @@ main()
 
         else{
 
-            medcourant=medfirst;
-            nbJours={31,28,31,30,31,30,31,31,30,31,30,31};
-            char[13][10] nomMois;
+
+
+            nbJours[0]=31;
+            nbJours[1]=28;
+            nbJours[2]=31;
+            nbJours[3]=30;
+            nbJours[4]=31;
+            nbJours[5]=30;
+            nbJours[6]=31;
+            nbJours[7]=31;
+            nbJours[8]=30;
+            nbJours[9]=31;
+            nbJours[10]=30;
+            nbJours[11]=31;
             strcpy(nomMois[0], "JANVIER");
             strcpy(nomMois[1], "FEVRIER");
             strcpy(nomMois[2], "MARS");
@@ -302,36 +316,122 @@ main()
             strcpy(nomMois[9], "OCTOBRE");
             strcpy(nomMois[10], "NOVEMBRE");
             strcpy(nomMois[11], "DECEMBRE");
-            fprintf(agdat,"2017\n");
-            for(i=0;i<12;i++)
-            {
-                for(j=0;j<nbJours[i];j++)
-                {
-                    fprintf(agdat,"%d %9s\n------------------------------", j+1, nomMois[j])
-                    for(k=medcourant->heureDeb;k<medcourant->heureFin;k+=.25)
-                    {
-                        kint=(int)k;
-                        if(kint%k==.25)
-                        {
-                            fprintf(agdat,"%dh15 : LIBRE\n", kint);
-                        }
-                        else if(kint%k==.5)
-                        {
-                            fprintf(agdat,"%dh30 : LIBRE\n", kint);
-                        }
-                        if(kint%k==.75)
-                        {
-                            fprintf(agdat,"%dh45 : LIBRE\n", kint);
-                        }
-                        else
-                        {
-                            fprintf(agdat,"%dh00 : LIBRE\n", kint);
-                        }
-                    }
-                    fprintf(agdat,"\f");
 
+            //Recherche du médecin
+
+            present=0;
+            while(present==0)
+            {
+                *medcourant=rechercherMedecin(medfirst, nMed, &present);
+                if(present==0)
+                {
+                    printf("Médecin inexistant\n");
                 }
             }
+
+            //Lecture de l'agenda du médecin
+
+            agcourant=malloc(sizeof(Agenda));
+            medcourant->agfirst=agcourant;
+            nPrest=(medcourant->heureFin-medcourant->heureDeb)*4;
+            agdat=fopen(medcourant->agenda,"r");
+            for(i=0;i<nbJours[11];i++)
+            {
+                fscanf(agdat,"%d %9s %4d %*[^\n]", &jour, mois, &annee);
+
+                for(j=0;j<nPrest;j++)
+                {
+                    nAg++;
+                    fscanf(agdat,"%2dh%2d :", &agcourant->heure, &agcourant->minute);
+                    fgets(agcourant->nom, 30, agdat);
+                    printf("%-30s\n", agcourant->nom);
+                    convertirNom(agcourant->nom);
+                    printf("%-30s\n", agcourant->nom);
+                    agcourant->jour=jour;
+                    agcourant->annee=annee;
+                    strcpy(agcourant->mois, mois);
+                    agsuivant=malloc(sizeof(Agenda));
+                    agcourant->suivant=agsuivant;
+                    agcourant=agsuivant;
+                }
+
+            }
+
+            for(i=0;i<12;i++)
+            {
+                for(j=0;j<nbJours[i];i++)
+                {
+                    fscanf(agdat,"%d %9s %4d", &jour, mois, &annee);
+
+                    for(k=0;k<nPrest;k++)
+                    {
+                        nAg++;
+                        fscanf(agdat,"%2dh%2d :", &agcourant->heure, &agcourant->minute);
+                        fgets(agcourant->nom, 30, agdat);
+                        convertirNom(agcourant->nom);
+                        agcourant->jour=jour;
+                        agcourant->annee=annee;
+                        strcpy(agcourant->mois, mois);
+                        agsuivant=malloc(sizeof(Agenda));
+                        agcourant->suivant=agsuivant;
+                        agcourant=agsuivant;
+                    }
+                }
+            }
+
+            //Prise de rendez-vous
+
+            present=0;
+            agcourant=medcourant->agfirst;
+            *agcourant=rechercherAgenda(agcourant, medcourant->heureDeb, medcourant->heureFin, nPrest, &present, nomMois[12], nAg);
+
+            printf("Nom patient : ");
+            scanf("%30s", nom);
+
+            printf("%-30s\n", agcourant->nom);
+            if(strcmp(agcourant->nom,"LIBRE")==0)
+            {
+                strcpy(agcourant->nom, nom);
+            }
+            else
+            {
+                printf("Rendez-vous déjà programmé à cette date\n");
+            }
+
+            //Ecriture de l'agenda
+
+            fclose(agdat);
+            agdat=fopen(medcourant->agenda,"w");
+            agcourant=medcourant->agfirst;
+
+
+            for(i=0;i<nbJours[11];i++)
+            {
+                fprintf(agdat,"%2d %-9s %4d\n------------------------------\n", agcourant->jour, agcourant->mois, agcourant->annee);
+                for(j=0;j<nPrest;j++)
+                {
+                    fprintf(agdat,"%2dh%2d : %-30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                    agcourant=agcourant->suivant;
+                }
+                fprintf(agdat,"/f");
+            }
+
+            for(i=0;i<12;i++)
+            {
+                for(j=0;j<nbJours[i];i++)
+                {
+                    fprintf(agdat,"%2d %-9s %4d\n------------------------------\n", agcourant->jour, agcourant->mois, agcourant->annee);
+
+                    for(k=0;k<nPrest;k++)
+                    {
+                        fprintf(agdat,"%2dh%2d : %30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                        agcourant=agcourant->suivant;
+                    }
+                    fprintf(agdat,"/f");
+                }
+            }
+
+
         }
 
 }
@@ -428,22 +528,73 @@ struct Medecin rechercherMedecin(Medecin *medfirst, int nMed, int *present)
     return *medcourant;
 }
 
+struct Agenda rechercherAgenda(Agenda *agfirst, int deb, int fin, int nPrest, int *present, char nomMois[10], int nAg)
+{
+    int i, jour, annee, heure, minute, j;
+    char mois[10], date[11], an[5], month[3], day[3], h[3], m[3];
+    Agenda *agcourant;
+
+    printf("Date du rendez vous (xxxx/xx/xx) : ");
+    scanf("%10s", date);
+    for(i=0;i<4;i++)
+    {
+        an[i]=date[i];
+    }
+    annee=atoi(an);
+
+    for(i=0;i<2;i++)
+    {
+        month[i]=date[i+5];
+        day[i]=date[i+8];
+    }
+    jour=atoi(day);
+    j=atoi(month)-1;
+    strcpy(mois,&nomMois[j]);
+
+    printf("Heure du rendez-vous (xx:xx) : ");
+    scanf("%5s", date);
+    for(j=0;j<2;j++)
+    {
+        h[i]=date[i];
+        m[i]=date[i+3];
+    }
+    heure=atoi(h);
+    minute=atoi(m);
+
+    agcourant=agfirst;
+    for(i=0;i<nAg;i++)
+    {
+        if(agcourant->jour==jour && agcourant->mois==mois && agcourant->annee==annee && agcourant->minute==minute && agcourant->heure==heure)
+        {
+           i=nAg;
+           *present=1;
+
+        }
+        else
+        {
+            agcourant=agcourant->suivant;
+        }
+    }
+    return *agcourant;
+}
+
 void convertirNom(char nom[31])
 {
     int i;
     for(i=0;i<30;i++)
     {
-        char[i] = toupper(char[i]);
+        nom[i] = toupper(nom[i]);
     }
 }
 
 void convertirPrenom(char prenom[31])
 {
-    char[0] = toupper(char[0]);
+    prenom[0] = toupper(prenom[0]);
 }
 void convertirLibelle(Prestation *pres, int nPres)
 {
     int i, j;
+    Prestation *prescourant;
     prescourant=pres;
     for(i=0;i<nPres;i++)
     {
@@ -452,6 +603,7 @@ void convertirLibelle(Prestation *pres, int nPres)
             if(prescourant->libelle[j]=='\n')
             {
                 prescourant->libelle[j]=' ';
+                j=100;
             }
         }
         prescourant=prescourant->suivant;
