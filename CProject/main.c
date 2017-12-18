@@ -41,12 +41,12 @@ struct Agenda
 
 main()
 {
-        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, nbJours[13], l, jour, annee, nAg=0; //i, j, k servent uniquement à incrémenter
-        float k, tmp, ent;
-        char numRegNat[14], libelle[101], nomMois[13][10], mois[10], nom[31];
-        FILE *patdat, *meddat, *stdat, *ophdat, *orldat, *agdat;
-        Medecin *medcourant, *medintervale, *medfirst, *medsuivant;
-        Patient *patfirst, *patcourant, *patintervale, *patsuivant;
+        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, nbJours[13], jour, annee, nAg=0; //i, j, k servent uniquement à incrémenter
+        float k;
+        char numRegNat[14], nomMois[13][10], mois[10], nom[31];
+        FILE *patdat, *meddat, *stdat, *ophdat, *gyndat, *agdat;
+        Medecin *medcourant, *medfirst, *medsuivant;
+        Patient *patfirst, *patcourant, *patsuivant;
         Prestation *prescourant, *presfirst, *pressuivant;
         void convertirLibelle(Prestation *, int), convertirNom(char[]), convertirPrenom(char[]);
         struct Prestation ajouterPrestation(Prestation *, int, int *);
@@ -628,4 +628,3 @@ void convertirLibelle(Prestation *pres, int nPres)
         prescourant=prescourant->suivant;
     }
 }
-
