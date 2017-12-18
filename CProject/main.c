@@ -60,7 +60,7 @@ main()
         meddat=fopen("medecin.dat","r");
         stdat=fopen("stomato.dat","r");
         ophdat=fopen("ophtalmo.dat","r");
-        orldat=fopen("orl.dat","r");
+        gyndat=fopen("gyneco.dat","r");
 
         while(scan<1|| scan >3){
             printf("Bienvenue dans votre programme de gestion.\n1. Encoder prestation\n2. Rechercher patient\n3. Prise de rendez-vous\n");
@@ -179,16 +179,16 @@ main()
             }
             else
             {
-                fscanf(orldat,"%6d", &nPrest);
+                fscanf(gyndat,"%6d", &nPrest);
                 prescourant->num=nPrest;
                 presfirst=prescourant;
-                while(!feof(orldat)){
+                while(!feof(gyndat)){
                     nPres++;
-                    fgets(prescourant->libelle, 100, orldat);
+                    fgets(prescourant->libelle, 100, gyndat);
                     pressuivant=malloc(sizeof(Prestation));
                     prescourant->suivant=pressuivant;
                     prescourant=pressuivant;
-                    fscanf(orldat,"%6d", &nPrest);
+                    fscanf(gyndat,"%6d", &nPrest);
                     prescourant->num=nPrest;
                 }
             }
