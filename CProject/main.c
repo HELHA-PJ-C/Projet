@@ -41,7 +41,7 @@ struct Agenda
 
 main()
 {
-        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, nbJours[13], l, jour, annee, nAg=0; //i, j, k servent uniquement à incrémenter
+        int scan=0, nPres=0, nMed=0, nPat=0, i, present, nPrest, j, nbJours[13], l, jour, annee, nAg=0; //i, j, k servent uniquement Ã  incrÃ©menter
         float k, tmp, ent;
         char numRegNat[14], libelle[101], nomMois[13][10], mois[10], nom[31];
         FILE *patdat, *meddat, *stdat, *ophdat, *orldat, *agdat;
@@ -53,7 +53,7 @@ main()
         struct Patient rechercherPatient(Patient *, int, int *, char[]), ajouterPatient(char[]);
         struct Medecin rechercherMedecin(Medecin *, int, int *);
         struct Agenda rechercherAgenda(Agenda *, int, int, int, int*, char[13][10], int);
-        struct Agenda *agcourant, *agsuivant;
+        struct Agenda *agcourant, *agsuivant, *agtmp;
 
 
         patdat=fopen("patient.dat","r");
@@ -134,18 +134,18 @@ main()
 
         if(scan==1){
 
-            //Recherche du médecin
+            //Recherche du mÃ©decin
             present=0;
             while(present==0)
             {
                 *medcourant=rechercherMedecin(medfirst, nMed, &present);
                 if(present==0)
                 {
-                    printf("Erreur : médecin inexistant");
+                    printf("Erreur : mÃ©decin inexistant");
                 }
             }
 
-            // Lecture prestation en fonction de la spécialité du médecin
+            // Lecture prestation en fonction de la spÃ©cialitÃ© du mÃ©decin
             prescourant=malloc(sizeof(Prestation));
             if(strcmp(medcourant->specialite,"STOMATOLOGUE")==0)
             {
@@ -281,7 +281,7 @@ main()
             }
             else
             {
-                printf("Patient non présent dans les données\n");
+                printf("Patient non prÃ©sent dans les donnÃ©es\n");
             }
 
         }
@@ -317,7 +317,7 @@ main()
             strcpy(nomMois[10], "NOVEMBRE");
             strcpy(nomMois[11], "DECEMBRE");
 
-            //Recherche du médecin
+            //Recherche du mÃ©decin
 
             present=0;
             while(present==0)
@@ -325,11 +325,11 @@ main()
                 *medcourant=rechercherMedecin(medfirst, nMed, &present);
                 if(present==0)
                 {
-                    printf("Médecin inexistant\n");
+                    printf("MÃ©decin inexistant\n");
                 }
             }
 
-            //Lecture de l'agenda du médecin
+            //Lecture de l'agenda du mÃ©decin
 
             agcourant=malloc(sizeof(Agenda));
             medcourant->agfirst=agcourant;
@@ -380,18 +380,18 @@ main()
             //Prise de rendez-vous
 
             present=0;
-            *agcourant=rechercherAgenda(medcourant->agfirst, medcourant->heureDeb, medcourant->heureFin, nPrest, &present, nomMois, nAg);
+            agtmp=malloc(sizeof(Agenda));
+            *agtmp=rechercherAgenda(medcourant->agfirst, medcourant->heureDeb, medcourant->heureFin, nPrest, &present, nomMois, nAg);
             printf("Nom patient : ");
             scanf("%30s", nom);
 
-            if(strcmp(agcourant->nom,"LIBRE ")==0)
+            if(strcmp(agtmp->nom,"LIBRE ")==0)
             {
-                strcpy(agcourant->nom, nom);
-                printf("%2d %-9s %4d %2dh%2d %-30s", agcourant->jour, agcourant->mois, agcourant->annee, agcourant->heure, agcourant->minute, agcourant->nom);
+                strcpy(agtmp->nom, nom);
             }
             else
             {
-                printf("Rendez-vous déjà programmé à cette date\n");
+                printf("Rendez-vous dÃ©jÃ  programmÃ© Ã  cette date\n");
             }
 
             //Ecriture de l'agenda
@@ -399,7 +399,6 @@ main()
             fclose(agdat);
             agdat=fopen(medcourant->agenda,"w");
             agcourant=medcourant->agfirst;
-            printf("%1d %-9s %4d", agcourant->jour, agcourant->mois, agcourant->annee);
 
 
             for(i=0;i<nbJours[11];i++)
@@ -407,7 +406,16 @@ main()
                 fprintf(agdat,"%2d %-9s %4d\n------------------------------\n", agcourant->jour, agcourant->mois, agcourant->annee);
                 for(j=0;j<nPrest;j++)
                 {
-                    fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                    if(agcourant->heure == agtmp->heure && agcourant->minute == agtmp->minute && agcourant->jour == agtmp->jour && strcmp(agcourant->mois, agtmp->mois)==0
+                       && agcourant->annee == agtmp->annee)
+                    {
+                        fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agtmp->nom);
+                    }
+                    else
+                    {
+                        fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                    }
+
                     agcourant=agcourant->suivant;
                 }
                 fprintf(agdat,"\f");
@@ -417,11 +425,21 @@ main()
             {
                 for(j=0;j<nbJours[i];j++)
                 {
-                    fprintf(agdat,"%2d %-9s %4d\n------------------------------\n", agcourant->jour, agcourant->mois, agcourant->annee);
+                   // fprintf(agdat,"%2d %-9s %4d\n------------------------------\n", agcourant->jour, agcourant->mois, agcourant->annee);
 
                     for(k=0;k<nPrest;k++)
                     {
-                        fprintf(agdat,"%2dh%02d : %30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                        if(agcourant->heure == agtmp->heure && agcourant->minute == agtmp->minute && agcourant->jour == agtmp->jour && strcmp(agcourant->mois, agtmp->mois)==0
+                            && agcourant->annee == agtmp->annee)
+                        {
+                            fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agtmp->nom);
+                        }
+                        else
+                        {
+                            fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
+                        }
+
+                        fprintf(agdat,"%2dh%02d : %-30s\n", agcourant->heure, agcourant->minute, agcourant->nom);
                         agcourant=agcourant->suivant;
                     }
                     fprintf(agdat,"\f");
@@ -442,7 +460,7 @@ struct Patient ajouterPatient(char numRegNat[13])
     printf("Nom du patient : ");
     scanf("%30s", pat->nom);
     convertirNom(pat->nom);
-    printf("Prénom du patient : ");
+    printf("PrÃ©nom du patient : ");
     convertirPrenom(pat->prenom);
     scanf("%30s", pat->prenom);
     printf("Date de naissance : ");
@@ -455,7 +473,7 @@ struct Prestation ajouterPrestation(Prestation *presfirst, int nPres, int *prese
 {
     Prestation *prescourant;
     int numero, i;
-    printf("Numéro de prestation : ");
+    printf("NumÃ©ro de prestation : ");
     scanf("%6d", &numero);
     prescourant=presfirst;
     *present=0;
@@ -479,14 +497,14 @@ struct Patient rechercherPatient(Patient *patfirst, int nPat, int *present, char
 {
     int i;
     Patient *patcourant;
-    printf("Numéro du registre national du patient : ");
+    printf("NumÃ©ro du registre national du patient : ");
     scanf("%13s", numRegNat);
 
     *present=0;
     patcourant=patfirst;
     for(i=0;i<nPat;i++)
     {
-        //On vérifie que le patient est dans la liste
+        //On vÃ©rifie que le patient est dans la liste
         if(strcmp(patcourant->niss,numRegNat)==0)
         {
             i=nPat;
@@ -506,7 +524,7 @@ struct Medecin rechercherMedecin(Medecin *medfirst, int nMed, int *present)
     char inami[15];
     Medecin *medcourant;
 
-    printf("Numéro inami : ");
+    printf("NumÃ©ro inami : ");
     scanf("%14s", inami);
 
     medcourant=medfirst;
@@ -610,3 +628,4 @@ void convertirLibelle(Prestation *pres, int nPres)
         prescourant=prescourant->suivant;
     }
 }
+
